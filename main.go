@@ -59,4 +59,9 @@ func main() {
 	if nil != err {
 		log.Fatal(err)
 	}
+
+	err = webclient.RegisterRover(p.rovername)
+	if nil != err {
+		log.Fatal(err)
+	}
 }
