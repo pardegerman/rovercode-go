@@ -8,6 +8,9 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"time"
+
+	"github.com/pardegerman/rovercode-go/roverserver"
 	"github.com/pardegerman/rovercode-go/webclient"
 )
 
@@ -59,9 +62,20 @@ func main() {
 	if nil != err {
 		log.Fatal(err)
 	}
+	fmt.Printf("Successfully logged in to %s\n", p.baseURL)
 
 	err = webclient.RegisterRover(p.rovername)
 	if nil != err {
 		log.Fatal(err)
 	}
+	fmt.Printf("Registered rover as %s\n", p.rovername)
+
+	err = roverserver.Serve()
+	if nil != err {
+		log.Fatal(err)
+	}
+	fmt.Println("Started server")
+
+	time.Sleep(30 * time.Second)
+	fmt.Println("Exiting...")
 }
