@@ -153,6 +153,7 @@ func getip() (ip string, err error) {
 		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if nil != ipnet.IP.To4() {
 				ip = ipnet.IP.String()
+				dbg("Got IP: %s", ip)
 				break
 			}
 		}

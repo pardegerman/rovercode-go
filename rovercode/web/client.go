@@ -7,7 +7,10 @@ import (
 
 	"github.com/levigross/grequests"
 	"github.com/pardegerman/rovercode-go/rovercode"
+	"github.com/tj/go-debug"
 )
+
+var dbg = debug.Debug("web")
 
 var (
 	session      websession

@@ -1,11 +1,14 @@
 package rovercode
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/kidoman/embd"
 	_ "github.com/kidoman/embd/host/all" // Load all platforms supported
+	"github.com/tj/go-debug"
 )
+
+var dbg = debug.Debug("gpio")
 
 // Rover describe all properties of a registered rover
 type Rover struct {
@@ -30,36 +33,51 @@ const (
 )
 
 // SetPWM of the specified pin
-func (r *Rover) SetPWM(pin string, duty float64) (err error) {
-	fmt.Printf("Setting PWM of %s to %f\n", pin, duty)
-
-	if _, ok := r.pwmpins[pin]; !ok {
-		fmt.Printf("-- Initializing pin %s\n", pin)
-		if 0 == len(r.pwmpins) {
-			fmt.Printf("-- Init embd.GPIO\n")
-			err = embd.InitGPIO()
-			if nil != err {
-				return
-			}
-		}
-		r.pwmpins[pin], err = embd.NewPWMPin(pin)
+func (r *Rover) SetPWM(pinname string, duty float64) (err error) {
+	if 0 > duty || 1.0 < duty {
+		err = errors.New("duty out of range, must be between 0 and 1")
+		return
+	}
+	pin, found := r.pwmpins[pinname]
+	if !found {
+		err = r.initpin(pinname)
 		if nil != err {
-			return
-		}
-		err = r.pwmpins[pin].SetMicroseconds(cycle)
-		if nil != err {
-			return
+			// Could not init pin, let's mock it
+			r.pwmpins[pinname] = nil
 		}
 	}
 	ns := (int)(1e3 * cycle * duty)
-	fmt.Printf("-- Setting duty to %d ns (%f) at pin %s\n", ns, duty, pin)
-	err = r.pwmpins[pin].SetDuty(ns)
+	dbg("setting duty on pin %s to %d ns (%f)", pinname, ns, duty)
+	if nil != pin {
+		err = pin.SetDuty(ns)
+	}
+
+	return
+}
+
+func (r *Rover) initpin(pin string) (err error) {
+	dbg("creating pin %s", pin)
+	if nil == r.pwmpins {
+		r.pwmpins = make(map[string]embd.PWMPin)
+	}
+	r.pwmpins[pin], err = embd.NewPWMPin(pin)
+	if nil != err {
+		dbg("NewPWMPin: %s", err.Error())
+		return
+	}
+	dbg("setting PWM period on pin %s to %d us", pin, cycle)
+	err = r.pwmpins[pin].SetMicroseconds(cycle)
+	if nil != err {
+		dbg("SetMicroseconds: %s", err.Error())
+		return
+	}
 
 	return
 }
 
 func (r *Rover) close() (err error) {
 	for _, pin := range r.pwmpins {
+		dbg("Closing pin %#v", pin)
 		pin.Close()
 	}
 	embd.CloseGPIO()

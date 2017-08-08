@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"net/url"
 
 	"github.com/levigross/grequests"
@@ -29,21 +28,17 @@ func (ws *websession) Get(resource string, ro *grequests.RequestOptions) (res *g
 		return nil, err
 	}
 
-	fmt.Printf("GETTING from %s with\n", ws.server.String())
+	dbg("GETTING from %s", ws.server.String())
 	if nil != ro {
-		fmt.Print("\tdata: ")
-		fmt.Println(ro.Data)
-		fmt.Print("\theader: ")
-		fmt.Println(ro.Headers)
+		dbg(" data: %#v", ro.Data)
+		dbg(" header: %#v", ro.Headers)
 	}
-	fmt.Print("\tcookies: ")
-	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
+	dbg(" cookies: %#v", ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
 	res, err = ws.sess.Get(url, ro)
 
 	if nil != res.RawResponse {
-		fmt.Print("\tRESPONSE header: ")
-		fmt.Println(res.RawResponse.Header)
+		dbg("RESPONSE header: %#v", res.RawResponse.Header)
 	}
 
 	return res, err
@@ -65,19 +60,17 @@ func (ws *websession) Post(resource string, ro *grequests.RequestOptions) (res *
 		return nil, err
 	}
 
-	fmt.Printf("POSTING to %s with\n", ws.server.String())
-	fmt.Print("\tdata: ")
-	fmt.Println(ro.Data)
-	fmt.Print("\theader: ")
-	fmt.Println(ro.Headers)
-	fmt.Print("\tcookies: ")
-	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
+	dbg("POSTING to %s", ws.server.String())
+	if nil != ro {
+		dbg(" data: %#v", ro.Data)
+		dbg(" header: %#v", ro.Headers)
+	}
+	dbg(" cookies: %#v", ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
 	res, err = ws.sess.Post(ws.server.String(), ro)
 
 	if nil != res.RawResponse {
-		fmt.Print("\tRESPONSE header: ")
-		fmt.Println(res.RawResponse.Header)
+		dbg("RESPONSE header: %#v", res.RawResponse.Header)
 	}
 
 	return res, err
@@ -98,19 +91,17 @@ func (ws *websession) Put(resource string, ro *grequests.RequestOptions) (res *g
 		return nil, err
 	}
 
-	fmt.Printf("PUTTING to %s with\n", ws.server.String())
-	fmt.Print("\tdata: ")
-	fmt.Println(ro.Data)
-	fmt.Print("\theader: ")
-	fmt.Println(ro.Headers)
-	fmt.Print("\tcookies: ")
-	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
+	dbg("PUTTING from %s", ws.server.String())
+	if nil != ro {
+		dbg(" data: %#v", ro.Data)
+		dbg(" header: %#v", ro.Headers)
+	}
+	dbg(" cookies: %#v", ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
 	res, err = ws.sess.Put(ws.server.String(), ro)
 
 	if nil != res.RawResponse {
-		fmt.Print("\tRESPONSE header: ")
-		fmt.Println(res.RawResponse.Header)
+		dbg("RESPONSE header: %#v", res.RawResponse.Header)
 	}
 
 	return res, err
