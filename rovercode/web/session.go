@@ -14,7 +14,7 @@ type websession struct {
 }
 
 // GET a resource from rovercode-web
-func (ws *websession) Get(resource string, params map[string]string) (res *grequests.Response, err error) {
+func (ws *websession) Get(resource string, ro *grequests.RequestOptions) (res *grequests.Response, err error) {
 	if nil == ws.server || nil == ws.sess {
 		err = initws(ws)
 		if nil != err {
@@ -24,24 +24,22 @@ func (ws *websession) Get(resource string, params map[string]string) (res *grequ
 	ws.server.Path = resource
 	url := ws.server.String()
 
-	ro := grequests.RequestOptions{
-		Params: params,
-	}
-
-	err = ws.addcsrftoken(&ro)
+	err = ws.addcsrftoken(ro)
 	if nil != err {
 		return nil, err
 	}
 
 	fmt.Printf("GETTING from %s with\n", ws.server.String())
-	fmt.Print("\tdata: ")
-	fmt.Println(ro.Data)
-	fmt.Print("\theader: ")
-	fmt.Println(ro.Headers)
+	if nil != ro {
+		fmt.Print("\tdata: ")
+		fmt.Println(ro.Data)
+		fmt.Print("\theader: ")
+		fmt.Println(ro.Headers)
+	}
 	fmt.Print("\tcookies: ")
 	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
-	res, err = ws.sess.Get(url, &ro)
+	res, err = ws.sess.Get(url, ro)
 
 	fmt.Print("\tRESPONSE header: ")
 	fmt.Println(res.RawResponse.Header)
@@ -110,6 +108,16 @@ func (ws *websession) Put(resource string, ro *grequests.RequestOptions) (res *g
 	fmt.Println(res.RawResponse.Header)
 
 	return res, err
+}
+
+// HasSessionID returns true if a logged in session has been established
+func (ws *websession) HasSessionID() bool {
+	for _, c := range ws.sess.HTTPClient.Jar.Cookies(ws.server) {
+		if "sessionid" == c.Name && "" != c.Value {
+			return true
+		}
+	}
+	return false
 }
 
 func initws(ws *websession) (err error) {

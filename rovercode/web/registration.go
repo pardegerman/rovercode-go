@@ -26,8 +26,10 @@ func (wr *webregistration) SearchID(rovername string) (id int, err error) {
 
 	res, err := wr.Session.Get(
 		"/mission-control/rovers/",
-		map[string]string{
-			"name": rovername,
+		&grequests.RequestOptions{
+			Params: map[string]string{
+				"name": rovername,
+			},
 		},
 	)
 	if nil != err {

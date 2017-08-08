@@ -42,11 +42,9 @@ func Login(username, password string) (err error) {
 	)
 	if nil != err {
 		return
-	} else if !res.Ok {
+	} else if !res.Ok || !session.HasSessionID() {
 		return errors.New("could not login")
 	}
-	// TODO: Check that the login worked (user/pass was ok)
-	// Could be achieved by comparing that we ended up at /users/[username]/
 
 	registration = webregistration{Session: &session}
 	return
