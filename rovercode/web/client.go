@@ -30,6 +30,7 @@ func Login(username, password string) (err error) {
 	} else if !res.Ok {
 		return errors.New("could not retrieve server landing page")
 	}
+	defer res.Close()
 
 	res, err = session.Post(
 		"/accounts/login/",

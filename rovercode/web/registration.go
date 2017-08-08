@@ -38,6 +38,7 @@ func (wr *webregistration) SearchID(rovername string) (id int, err error) {
 		err = errors.New("could not search for rover; " + res.String())
 		return
 	}
+	defer res.Close()
 
 	rovers := make([]rovercode.Rover, 1)
 	err = json.Unmarshal(res.Bytes(), &rovers)
@@ -70,6 +71,7 @@ func (wr *webregistration) Get(id int) (r *rovercode.Rover, err error) {
 		err = errors.New("could not get rover data; " + res.String())
 		return
 	}
+	defer res.Close()
 
 	err = res.JSON(&wr.r)
 	return &wr.r, err
@@ -102,6 +104,7 @@ func (wr *webregistration) Register(rovername string) (r *rovercode.Rover, err e
 		err = errors.New("could not register rover: " + res.String())
 		return
 	}
+	defer res.Close()
 
 	err = res.JSON(&wr.r)
 	return &wr.r, err
@@ -134,6 +137,7 @@ func (wr *webregistration) Update() (err error) {
 	} else if !res.Ok {
 		return errors.New("could not update rover data; " + res.String())
 	}
+	defer res.Close()
 
 	return
 }
