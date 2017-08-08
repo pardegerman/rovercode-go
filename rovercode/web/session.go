@@ -131,12 +131,16 @@ func initws(ws *websession) (err error) {
 func (ws *websession) addcsrftoken(ro *grequests.RequestOptions) (err error) {
 	for _, c := range ws.sess.HTTPClient.Jar.Cookies(ws.server) {
 		if "csrftoken" == c.Name {
+			if nil == ro {
+				ro = &grequests.RequestOptions{}
+			}
 			ro.Headers = map[string]string{
 				"X-CSRFTOKEN": c.Value,
 			}
 			if 0 < len(ro.Data) {
 				ro.Data["csrfmiddlewaretoken"] = c.Value
 			}
+			break
 		}
 	}
 
