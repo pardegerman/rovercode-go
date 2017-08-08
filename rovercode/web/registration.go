@@ -87,7 +87,7 @@ func (wr *webregistration) Register(rovername string) (r *rovercode.Rover, err e
 
 	res, err := wr.Session.Post(
 		"/mission-control/rovers/",
-		PostArgs{
+		&grequests.RequestOptions{
 			JSON: map[string]string{
 				"name":     rovername,
 				"local_ip": ipaddr,

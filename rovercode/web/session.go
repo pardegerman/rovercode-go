@@ -7,12 +7,6 @@ import (
 	"github.com/levigross/grequests"
 )
 
-// PostArgs is the arguments used for a POST to the session
-type PostArgs struct {
-	Data map[string]string
-	JSON map[string]string
-}
-
 type websession struct {
 	BasePath string
 	server   *url.URL
@@ -34,11 +28,16 @@ func (ws *websession) Get(resource string, params map[string]string) (res *grequ
 		Params: params,
 	}
 
-	fmt.Printf("GETTING to %s with\n", ws.server.String())
+	err = ws.addcsrftoken(&ro)
+	if nil != err {
+		return nil, err
+	}
+
+	fmt.Printf("GETTING from %s with\n", ws.server.String())
 	fmt.Print("\tdata: ")
 	fmt.Println(ro.Data)
 	fmt.Print("\theader: ")
-	fmt.Println(ws.sess.RequestOptions.Headers)
+	fmt.Println(ro.Headers)
 	fmt.Print("\tcookies: ")
 	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
@@ -47,14 +46,11 @@ func (ws *websession) Get(resource string, params map[string]string) (res *grequ
 	fmt.Print("\tRESPONSE header: ")
 	fmt.Println(res.RawResponse.Header)
 
-	// A GET might update the CSRFTOKEN, store that when that happens
-	err = ws.setcsrftoken(res)
-
 	return res, err
 }
 
 // POST to a resource on rovercode-web
-func (ws *websession) Post(resource string, args PostArgs) (res *grequests.Response, err error) {
+func (ws *websession) Post(resource string, ro *grequests.RequestOptions) (res *grequests.Response, err error) {
 	if nil == ws.server || nil == ws.sess {
 		err = initws(ws)
 		if nil != err {
@@ -63,33 +59,24 @@ func (ws *websession) Post(resource string, args PostArgs) (res *grequests.Respo
 	}
 	ws.server.Path = resource
 
-	ro := grequests.RequestOptions{
-		Data: args.Data,
-		JSON: args.JSON,
-	}
-
 	// Merge data to add csrftoken to the form
-	if 0 < len(args.Data) {
-		for n, v := range ws.sess.RequestOptions.Data {
-			ro.Data[n] = v
-		}
+	err = ws.addcsrftoken(ro)
+	if nil != err {
+		return nil, err
 	}
 
 	fmt.Printf("POSTING to %s with\n", ws.server.String())
 	fmt.Print("\tdata: ")
 	fmt.Println(ro.Data)
 	fmt.Print("\theader: ")
-	fmt.Println(ws.sess.RequestOptions.Headers)
+	fmt.Println(ro.Headers)
 	fmt.Print("\tcookies: ")
 	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
-	res, err = ws.sess.Post(ws.server.String(), &ro)
+	res, err = ws.sess.Post(ws.server.String(), ro)
 
 	fmt.Print("\tRESPONSE header: ")
 	fmt.Println(res.RawResponse.Header)
-
-	// A POST might update the CSRFTOKEN, store that when that happens
-	err = ws.setcsrftoken(res)
 
 	return res, err
 }
@@ -104,10 +91,23 @@ func (ws *websession) Put(resource string, ro *grequests.RequestOptions) (res *g
 	}
 	ws.server.Path = resource
 
+	err = ws.addcsrftoken(ro)
+	if nil != err {
+		return nil, err
+	}
+
+	fmt.Printf("PUTTING to %s with\n", ws.server.String())
+	fmt.Print("\tdata: ")
+	fmt.Println(ro.Data)
+	fmt.Print("\theader: ")
+	fmt.Println(ro.Headers)
+	fmt.Print("\tcookies: ")
+	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
+
 	res, err = ws.sess.Put(ws.server.String(), ro)
 
-	// A PUT might update the CSRFTOKEN, store that when that happens
-	err = ws.setcsrftoken(res)
+	fmt.Print("\tRESPONSE header: ")
+	fmt.Println(res.RawResponse.Header)
 
 	return res, err
 }
@@ -128,14 +128,14 @@ func initws(ws *websession) (err error) {
 	return
 }
 
-func (ws *websession) setcsrftoken(res *grequests.Response) (err error) {
-	for _, c := range res.RawResponse.Cookies() {
+func (ws *websession) addcsrftoken(ro *grequests.RequestOptions) (err error) {
+	for _, c := range ws.sess.HTTPClient.Jar.Cookies(ws.server) {
 		if "csrftoken" == c.Name {
-			ws.sess.RequestOptions.Headers = map[string]string{
+			ro.Headers = map[string]string{
 				"X-CSRFTOKEN": c.Value,
 			}
-			ws.sess.RequestOptions.Data = map[string]string{
-				"csrfmiddlewaretoken": c.Value,
+			if 0 < len(ro.Data) {
+				ro.Data["csrfmiddlewaretoken"] = c.Value
 			}
 		}
 	}

@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -34,7 +33,7 @@ func Login(username, password string) (err error) {
 
 	res, err = session.Post(
 		"/accounts/login/",
-		PostArgs{
+		&grequests.RequestOptions{
 			Data: map[string]string{
 				"login":    username,
 				"password": password,
@@ -46,8 +45,8 @@ func Login(username, password string) (err error) {
 	} else if !res.Ok {
 		return errors.New("could not login")
 	}
-
-	fmt.Printf("We ended up at: %s\n", res.RawResponse.Request.URL.String())
+	// TODO: Check that the login worked (user/pass was ok)
+	// Could be achieved by comparing that we ended up at /users/[username]/
 
 	registration = webregistration{Session: &session}
 	return
