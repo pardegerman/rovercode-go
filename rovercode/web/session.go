@@ -41,8 +41,10 @@ func (ws *websession) Get(resource string, ro *grequests.RequestOptions) (res *g
 
 	res, err = ws.sess.Get(url, ro)
 
-	fmt.Print("\tRESPONSE header: ")
-	fmt.Println(res.RawResponse.Header)
+	if nil != res.RawResponse {
+		fmt.Print("\tRESPONSE header: ")
+		fmt.Println(res.RawResponse.Header)
+	}
 
 	return res, err
 }
@@ -73,8 +75,10 @@ func (ws *websession) Post(resource string, ro *grequests.RequestOptions) (res *
 
 	res, err = ws.sess.Post(ws.server.String(), ro)
 
-	fmt.Print("\tRESPONSE header: ")
-	fmt.Println(res.RawResponse.Header)
+	if nil != res.RawResponse {
+		fmt.Print("\tRESPONSE header: ")
+		fmt.Println(res.RawResponse.Header)
+	}
 
 	return res, err
 }
@@ -104,8 +108,10 @@ func (ws *websession) Put(resource string, ro *grequests.RequestOptions) (res *g
 
 	res, err = ws.sess.Put(ws.server.String(), ro)
 
-	fmt.Print("\tRESPONSE header: ")
-	fmt.Println(res.RawResponse.Header)
+	if nil != res.RawResponse {
+		fmt.Print("\tRESPONSE header: ")
+		fmt.Println(res.RawResponse.Header)
+	}
 
 	return res, err
 }
