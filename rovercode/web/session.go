@@ -34,14 +34,17 @@ func (ws *websession) Get(resource string, params map[string]string) (res *grequ
 		Params: params,
 	}
 
-	fmt.Printf("GETTING to %s with\n\tparams: ", ws.server.String())
-	fmt.Println(ro.Params)
-	fmt.Printf("\tcookies: ")
+	fmt.Printf("GETTING to %s with\n", ws.server.String())
+	fmt.Print("\tdata: ")
+	fmt.Println(ro.Data)
+	fmt.Print("\theader: ")
+	fmt.Println(ws.sess.RequestOptions.Headers)
+	fmt.Print("\tcookies: ")
 	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
 	res, err = ws.sess.Get(url, &ro)
 
-	fmt.Print("GET response header: ")
+	fmt.Print("\tRESPONSE header: ")
 	fmt.Println(res.RawResponse.Header)
 
 	// A GET might update the CSRFTOKEN, store that when that happens
@@ -72,14 +75,17 @@ func (ws *websession) Post(resource string, args PostArgs) (res *grequests.Respo
 		}
 	}
 
-	fmt.Printf("POSTING to %s with\n\tdata: ", ws.server.String())
+	fmt.Printf("POSTING to %s with\n", ws.server.String())
+	fmt.Print("\tdata: ")
 	fmt.Println(ro.Data)
-	fmt.Printf("\tcookies: ")
+	fmt.Print("\theader: ")
+	fmt.Println(ws.sess.RequestOptions.Headers)
+	fmt.Print("\tcookies: ")
 	fmt.Println(ws.sess.HTTPClient.Jar.Cookies(ws.server))
 
 	res, err = ws.sess.Post(ws.server.String(), &ro)
 
-	fmt.Print("POST response header: ")
+	fmt.Print("\tRESPONSE header: ")
 	fmt.Println(res.RawResponse.Header)
 
 	// A POST might update the CSRFTOKEN, store that when that happens
@@ -124,7 +130,6 @@ func initws(ws *websession) (err error) {
 
 func (ws *websession) setcsrftoken(res *grequests.Response) (err error) {
 	for _, c := range res.RawResponse.Cookies() {
-		fmt.Printf("Storing cookie %s: %s\n", c.Name, c.Value)
 		if "csrftoken" == c.Name {
 			ws.sess.RequestOptions.Headers = map[string]string{
 				"X-CSRFTOKEN": c.Value,

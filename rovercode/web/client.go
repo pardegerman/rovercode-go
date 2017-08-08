@@ -47,8 +47,7 @@ func Login(username, password string) (err error) {
 		return errors.New("could not login")
 	}
 
-	fmt.Println(res.Header)
-	fmt.Println(res.String())
+	fmt.Printf("We ended up at: %s\n", res.RawResponse.Request.URL.String())
 
 	registration = webregistration{Session: &session}
 	return
